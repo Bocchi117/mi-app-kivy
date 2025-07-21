@@ -6,6 +6,7 @@ package.name = miapp
 package.domain = org.example
 
 source.main = main.py
+source.dir = .
 
 requirements = kivy
 
