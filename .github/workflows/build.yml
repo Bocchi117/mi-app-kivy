@@ -26,6 +26,11 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython
 
+      - name: Fix requirements & clean
+        run: |
+          sed -i 's/python3,//g' buildozer.spec || true
+          buildozer android clean || true
+
       - name: Build APK
         run: |
           export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
