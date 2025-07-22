@@ -10,48 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Cache Python packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Cache Buildozer
-        uses: actions/cache@v3
-        with:
-          path: ~/.buildozer
-          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-          restore-keys: |
-            ${{ runner.os }}-buildozer-
-
-      - name: Instalar dependencias nativas necesarias
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libtool automake autoconf pkg-config
-
-      - name: Setup Python 3.11
+      - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: 3.10
 
-      - name: Instalar Buildozer y dependencias Python
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer cython
+          pip install buildozer==1.4.3
+          pip install cython==0.29.33
+          pip install python-for-android==2024.01.21
 
-      - name: Construir APK con Buildozer
-        run: buildozer android debug
-
-      - name: Listar APK generado
-        run: ls -l bin/
-
-      - name: Subir APK generado como artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: miapp-apk
-          path: bin/*.apk
+      - name: Build APK
+        run: |
+          buildozer android debug
