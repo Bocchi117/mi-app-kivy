@@ -23,7 +23,7 @@ jobs:
           sudo apt update
           sudo apt install -y zip unzip openjdk-17-jdk python3-pip git
           pip install --upgrade pip setuptools wheel
-          pip install buildozer==1.5.0 Cython==0.29.33 python-for-android==2023.08.27
+          pip install buildozer==1.5.0 Cython==0.29.33 python-for-android==2023.09.16
 
       - name: Build APK
         run: |
