@@ -51,7 +51,7 @@ jobs:
         run: ls -l bin/
 
       - name: Subir APK generado como artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: miapp-apk
           path: bin/*.apk
