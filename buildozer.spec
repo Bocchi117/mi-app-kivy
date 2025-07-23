@@ -4,15 +4,14 @@ title = Mi App Kivy
 package.name = miapp
 package.domain = org.example
 
-source.main = main.py
 source.dir = .
+source.main = main.py
 
-requirements = python3,kivy,python-for-android==2024.01.21
-
+requirements = kivy
 bootstrap = sdl2
 
-android.minapi = 21
-android.api = 31
-
 orientation = portrait
+android.api = 31
+android.minapi = 21
+
 version = 0.1
