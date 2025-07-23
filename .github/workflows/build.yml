@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
@@ -20,18 +20,33 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt update
-        sudo apt install -y build-essential ccache git zip unzip openjdk-17-jdk python3-pip libffi-dev libssl-dev libxml2-dev libxslt-dev zlib1g-dev pkg-config libncurses5 libncurses5-dev libsqlite3-dev
-        pip install --upgrade pip
-        pip install cython
+        python -m pip install --upgrade pip
+        pip install Cython==0.29.33
         pip install buildozer==1.5.0
 
-    - name: Build APK
+    - name: Install Android SDK & AIDL tools
       run: |
-        buildozer android debug
+        sudo apt-get update
+        sudo apt-get install -y openjdk-17-jdk unzip wget
+        wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmdline-tools.zip
+        unzip cmdline-tools.zip -d $HOME/android-sdk
+        mkdir -p $HOME/android-sdk/cmdline-tools/latest
+        mv $HOME/android-sdk/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest/
+        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$HOME/android-sdk \
+          "platform-tools" "platforms;android-31" "build-tools;31.0.0"
+
+        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+        echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+
+    - name: Build APK
+      run: buildozer android debug
+      env:
+        ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
+        PATH: ${{ env.PATH }}
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: miapp.apk
+        name: mi-apk
         path: bin/*.apk
