@@ -1,58 +1,55 @@
-import requests
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import Image
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
-from kivy.uix.image import Image
-from datetime import datetime
 from kivy.core.window import Window
-import os
-
-# Descargar imagen de fondo
-imagen_url = "https://i.pinimg.com/736x/36/5a/71/365a718faf40b8c2dea0f7d8afbb67b9.jpg"
-imagen_local = "fondo.jpg"
-if not os.path.exists(imagen_local):
-    r = requests.get(imagen_url)
-    with open(imagen_local, "wb") as f:
-        f.write(r.content)
 
 class EdadApp(App):
     def build(self):
         Window.clearcolor = (1, 1, 1, 1)
 
-        root = BoxLayout(orientation='vertical')
+        layout = FloatLayout()
 
-        self.background = Image(source=imagen_local, allow_stretch=True, keep_ratio=False)
-        root.add_widget(self.background)
+        fondo = Image(source='fondo.png', allow_stretch=True, keep_ratio=False)
+        layout.add_widget(fondo)
 
-        overlay = BoxLayout(orientation='vertical', padding=50, spacing=20, size_hint=(1, None))
-        overlay.size = (Window.width, Window.height)
-        overlay.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+        self.entrada = TextInput(
+            hint_text="Año de nacimiento",
+            size_hint=(0.6, 0.1),
+            pos_hint={"center_x": 0.5, "center_y": 0.7},
+            multiline=False,
+            input_filter='int'
+        )
+        layout.add_widget(self.entrada)
 
-        self.input = TextInput(hint_text='Ingresa fecha nacimiento (dd/mm/aaaa)', multiline=False, size_hint=(1, None), height=40)
-        self.result_label = Label(text='', size_hint=(1, None), height=40, color=(1,1,1,1))
+        boton = Button(
+            text="Calcular edad",
+            size_hint=(0.4, 0.1),
+            pos_hint={"center_x": 0.5, "center_y": 0.55}
+        )
+        boton.bind(on_press=self.calcular_edad)
+        layout.add_widget(boton)
 
-        btn = Button(text='Calcular Edad', size_hint=(1, None), height=40)
-        btn.bind(on_press=self.calcular_edad)
+        self.resultado = Label(
+            text="",
+            font_size=24,
+            color=(1, 1, 1, 1),
+            size_hint=(1, 0.2),
+            pos_hint={"center_x": 0.5, "center_y": 0.35}
+        )
+        layout.add_widget(self.resultado)
 
-        overlay.add_widget(self.input)
-        overlay.add_widget(btn)
-        overlay.add_widget(self.result_label)
-
-        root.add_widget(overlay)
-        return root
+        return layout
 
     def calcular_edad(self, instance):
         try:
-            fecha_nac = datetime.strptime(self.input.text, "%d/%m/%Y")
-            hoy = datetime.today()
-            edad = hoy.year - fecha_nac.year
-            if (hoy.month, hoy.day) < (fecha_nac.month, fecha_nac.day):
-                edad -= 1
-            self.result_label.text = f"Tienes {edad} años."
-        except ValueError:
-            self.result_label.text = "Fecha inválida. Usa dd/mm/aaaa."
+            anio = int(self.entrada.text)
+            edad = 2025 - anio
+            self.resultado.text = f"Tienes {edad} años"
+        except:
+            self.resultado.text = "Ingresa un año válido"
 
 if __name__ == '__main__':
     EdadApp().run()
