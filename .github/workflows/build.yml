@@ -6,60 +6,57 @@ on:
       - main
 
 jobs:
-  build-android:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Python 3.10
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: 3.10
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            zip unzip openjdk-17-jdk python3-pip \
-            libtool autoconf automake pkg-config \
-            libffi-dev libssl-dev libsqlite3-dev \
-            zlib1g-dev libreadline-dev libbz2-dev \
-            liblzma-dev
+          sudo apt update
+          sudo apt install -y openjdk-17-jdk unzip zip python3-pip \
+            libtool autoconf automake build-essential pkg-config \
+            libffi-dev libssl-dev libsqlite3-dev zlib1g-dev \
+            libncurses5-dev libncursesw5-dev libreadline-dev \
+            libbz2-dev liblzma-dev
 
-      - name: Install Buildozer & Cython
+      - name: Install buildozer
         run: |
-          python -m pip install --upgrade pip
-          pip install Cython==0.29.33 buildozer==1.5.0
+          python3 -m pip install --upgrade pip
+          pip install buildozer Cython==0.29.33
 
-      - name: Install Android SDK & command-line tools
-        env:
-          ANDROID_SDK_ROOT: $HOME/android-sdk
+      - name: Download Android SDK (command line tools)
         run: |
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          cd $ANDROID_SDK_ROOT/cmdline-tools
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O tools.zip
-          unzip tools.zip
-          mv cmdline-tools latest
+          unzip tools.zip -d $HOME/android-sdk/cmdline-tools
+          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
 
-      - name: Accept licenses & install platform packages
+      - name: Accept licenses and install build tools
         env:
           ANDROID_SDK_ROOT: $HOME/android-sdk
         run: |
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
             "platform-tools" "platforms;android-31" "build-tools;31.0.0"
 
       - name: Build APK
         env:
           ANDROID_HOME: $HOME/android-sdk
-          PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
+          PATH: $HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/latest/bin:$PATH
         run: |
           buildozer android debug
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: mi-app-apk
+          name: mi-apk
           path: bin/*.apk
